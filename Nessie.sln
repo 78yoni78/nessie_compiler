@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nessie", "Nessie\Nessie.fsproj", "{59F0ADCF-1F72-4CCE-A5C0-D88B3E30FC05}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59F0ADCF-1F72-4CCE-A5C0-D88B3E30FC05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F0ADCF-1F72-4CCE-A5C0-D88B3E30FC05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F0ADCF-1F72-4CCE-A5C0-D88B3E30FC05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F0ADCF-1F72-4CCE-A5C0-D88B3E30FC05}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BB2AA9BC-2BFD-4AE0-ACB1-C05A575330CA}
+	EndGlobalSection
+EndGlobal
