@@ -1,6 +1,12 @@
 ﻿[<AutoOpen>]
 module Nessie.Types
 
+type Token =
+    | Identifer of string
+    | IntLiteral of int
+    | LeftParen | RightParen
+    | LeftBrace | RightBrace
+    | LeftCurl | RightCurl
 
 /// A tree to be parsed from the source code
 [<RequireQualifiedAccess>]
