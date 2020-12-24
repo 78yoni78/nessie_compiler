@@ -31,6 +31,7 @@ type Ast =
 
 
 /// A function
+[<Struct>]
 type Function =
     { ArgType: Type
       Body: Expr
