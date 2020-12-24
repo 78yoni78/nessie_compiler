@@ -10,6 +10,7 @@ type TokenType =
     | LeftParen | RightParen
     | LeftBrace | RightBrace
     | LeftCurl | RightCurl
+    | EOF
 
 [<Struct>]
 type Token = { Type: TokenType; Str: string; Offset: int }
