@@ -1,35 +1,6 @@
 ﻿[<AutoOpen>]
 module Nessie.Types
 
-/// A tree to be parsed from the source code
-[<RequireQualifiedAccess>]
-type Ast =
-    /// A constant int value
-    | Int of int
-    (*
-    /// A constant number value
-    | Num of float
-    /// A constant string value
-    | Str of string
-    /// Create a tuple
-    | Tuple of Ast list
-    /// Create a lambda
-    | LambdaExpr of (string * Ast) * Ast
-    /// Convert the type
-    | TypeConvertion of Ast * Ast
-    *)
-    /// A variable term
-    | Var of string
-    //  A variable binding
-    | Let of string * Ast * ret: Ast
-    /// Apply arg to func (but from the right to left)
-    | RApply of arg: Ast * func: Ast
-    /// Apply arg to func (but from the left to right)
-    | LApply of func: Ast * arg: Ast
-    /// Ambiguous application
-    | Apply of Ast * Ast
-
-
 /// A function
 [<Struct>]
 type Function =

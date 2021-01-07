@@ -7,12 +7,15 @@ open Nessie
 [<EntryPoint>]
 let main argv =
     let text = @"
-let length-of (list: List) = 
-    if list empty? then 0 else length-of (tail-of list) + 1
+let x = 2 in 
+    x + 4
 " 
     
     let tokens, errors = Lex.lex text
 
+    let ast = Parse.parse tokens
+
     printfn "Tokens: %A" (tokens |> List.ofSeq |> List.map string)
     printfn "Errors: %A" errors
+    printfn "Ast: %A" ast
     0 // return an integer exit code
