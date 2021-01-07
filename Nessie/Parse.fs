@@ -57,6 +57,28 @@ module private Helper =
     let expectEq tokenType = expect (string tokenType) ((=) tokenType)
     let expectIdentifier = expect "identifier" (function TokenKind.Identifier _ -> true | _ -> false)
     
+    let rec private many' p acc =
+        parse {
+            let! maybe = p
+            match maybe with
+            | None -> return List.rev acc
+            | Some x -> return! many' p (x :: acc)
+        }
+    let many p = many' p []
+    let separated (sep: 's ParseAction) p = 
+        parse {
+            let! x1 = p
+            match x1 with
+            | None -> return None
+            | Some x1 ->
+                let! xs = many <| parse {
+                    let! s = sep
+                    let! xn = p
+                    return Option.map (fun xn -> s, xn) xn
+                }
+                return Some (x1, xs)
+        }
+
 open Helper
 
 let rec private ``let declaration`` =
@@ -79,14 +101,34 @@ and private atom =
             do! advance
             let! e = expr
             let! _ = expectEq TokenKind.LParen
-            return e
+            return Some e
         | TokenKind.Identifier _ ->
             do! advance
-            return Ast.Var current
+            return Some (Ast.Var current)
         | TokenKind.Int _ ->
             do! advance
-            return Ast.Literal current
-        | _ -> return! error (ParseError.Unexpected("atom", current))
+            return Some (Ast.Literal current)
+        | _ -> return None
+    }
+
+and private ``application expression`` =
+    parse {
+        let! maybe = 
+            separated (parse {
+                let! current = peek
+                match Token.kind current with
+                | TokenKind.LArrow -> 
+                    do! advance 
+                    return Ast.LApply
+                | TokenKind.RArrow -> 
+                    do! advance 
+                    return Ast.RApply
+                | _ -> return Ast.Apply
+            }) atom
+        match maybe with
+        | None -> return None
+        | Some (x1, xn) ->
+            return List.fold (fun x (sep, y) -> sep (x, y)) x1 xn |> Some
     }
 
 and private expr =
@@ -96,7 +138,10 @@ and private expr =
         | TokenKind.Let -> 
             return! ``let declaration`` 
         | _ -> 
-            return! atom
+            let! e1 = ``application expression``
+            match e1 with
+            | None -> return! error (ParseError.Unexpected("expression", current))
+            | Some e1 -> return e1
     }
 
 let parse (tokens: Tokens) =
