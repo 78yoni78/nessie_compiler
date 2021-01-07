@@ -40,6 +40,7 @@ module private Helper =
     let (|IdentifierOrKeyword|_|) = 
         sequence allowedInIdentifer >> Option.map (function
         | "let" -> TokenKind.Let
+        | "in" -> TokenKind.In
         | s -> TokenKind.Identifer s)
 
     /// maps to the correct token type of a single character simple terminal

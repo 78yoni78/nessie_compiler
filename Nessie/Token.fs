@@ -12,6 +12,7 @@ type TokenKind =
     | RBrace
     | Colon
     | Let 
+    | In
     | EOF
     override t.ToString() = 
         match t with
@@ -25,6 +26,7 @@ type TokenKind =
         | RBrace -> "}"
         | Colon -> ":"
         | Let -> "let"
+        | In -> "in"
         | EOF -> "EOF"
     
 [<Struct>]
