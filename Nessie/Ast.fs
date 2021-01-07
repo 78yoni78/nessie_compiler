@@ -14,3 +14,13 @@ type Ast =
     | LApply of func: Ast * arg: Ast
     /// Ambiguous application
     | Apply of Ast * Ast
+    override t.ToString() =
+        match t with
+        | Literal token 
+        | Var token
+            -> string token
+        | Let (var, body, retn) -> 
+            sprintf "let %O = %O in %O" var body retn
+        | RApply (arg, func) -> sprintf "(%O > %O)" arg func
+        | LApply (func, arg) -> sprintf "(%O < %O)" func arg
+        | Apply (left, right) -> sprintf "(%O %O)" left right

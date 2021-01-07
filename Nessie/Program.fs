@@ -15,7 +15,7 @@ let x = 2 in
 
     let ast = Parse.parse tokens
 
-    printfn "Tokens: %A" (tokens |> List.ofSeq |> List.map string)
+    printfn "Tokens: %s" (tokens |> Seq.map string |> String.concat " ")
     printfn "Errors: %A" errors
-    printfn "Ast: %A" ast
+    printfn "Ast: %A" (ast |> Result.map string |> Result.mapError string)
     0 // return an integer exit code
