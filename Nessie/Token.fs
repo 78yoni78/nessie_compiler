@@ -2,7 +2,7 @@
 
 [<Struct; RequireQualifiedAccess>]
 type TokenKind =
-    | Identifer of s: string
+    | Identifier of s: string
     | Int of i: int
     | LParen
     | RParen
@@ -16,7 +16,7 @@ type TokenKind =
     | EOF
     override t.ToString() = 
         match t with
-        | Identifer s -> s 
+        | Identifier s -> s 
         | Int i -> string i
         | LParen -> "("
         | RParen -> ")"

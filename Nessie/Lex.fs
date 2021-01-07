@@ -41,7 +41,7 @@ module private Helper =
         sequence allowedInIdentifer >> Option.map (function
         | "let" -> TokenKind.Let
         | "in" -> TokenKind.In
-        | s -> TokenKind.Identifer s)
+        | s -> TokenKind.Identifier s)
 
     /// maps to the correct token type of a single character simple terminal
     let (|SimpleToken|_|) { LexContext.Str=str; Index=i } =
