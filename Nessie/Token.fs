@@ -11,6 +11,8 @@ type TokenKind =
     | LBrace
     | RBrace
     | Colon
+    | LArrow
+    | RArrow
     | Let 
     | In
     | EOF
@@ -24,6 +26,8 @@ type TokenKind =
         | RBrack -> "]"
         | LBrace -> "{"
         | RBrace -> "}"
+        | LArrow -> "<"
+        | RArrow -> ">"
         | Colon -> ":"
         | Let -> "let"
         | In -> "in"

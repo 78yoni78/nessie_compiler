@@ -33,7 +33,7 @@ module private Helper =
     let (|Int|_|) = sequence Char.IsDigit >> Option.map int
     
     let private allowedInIdentifer = function
-        | '(' | ')' | '[' | ']' | '{' | '}' | ':' -> false
+        | '(' | ')' | '[' | ']' | '{' | '}' | ':' | '<' | '>' -> false
         | c when Char.IsWhiteSpace c -> false
         | _ -> true
 
@@ -53,6 +53,8 @@ module private Helper =
         | '{' -> Some TokenKind.LBrace
         | '}' -> Some TokenKind.RBrace
         | ':' -> Some TokenKind.Colon
+        | '<' -> Some TokenKind.LArrow
+        | '>' -> Some TokenKind.RArrow
         | _ -> None
         |> function
         | Some x -> incr i; Some x
