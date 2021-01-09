@@ -14,8 +14,8 @@ and [<RequireQualifiedAccess>] Value =
     | Func of Function
 
 and [<RequireQualifiedAccess>] Expr =
-    | Literal of Value
-    | Var of int * Type
+    | Literal of Value * Token
+    | Var of int * Type * Token
     /// A let in expression
     | Let of Expr * Expr
     /// Apply arg to func (but from the right to left)
