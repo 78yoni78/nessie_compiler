@@ -6,13 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="grammer.txt" />
     <Compile Include="Types.fs" />
     <Compile Include="Token.fs" />
     <Compile Include="Lex.fs" />
     <Compile Include="Ast.fs" />
     <Compile Include="Parse.fs" />
+    <Compile Include="Expr.fs" />
     <Compile Include="TypeChecker.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
+
+  <ItemGroup />
 
 </Project>

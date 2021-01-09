@@ -1,0 +1,11 @@
+﻿
+expression ->
+	| identifier `:` expression `->` expression
+	|`let` identifier `=` expression `in` expression
+	| atom+
+
+atom -> 
+	|identifier
+	| integer
+	| `(` expr `)`
+
