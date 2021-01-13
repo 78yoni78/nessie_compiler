@@ -80,8 +80,10 @@ and [<RequireQualifiedAccess>] Expr =
         | RApply (_, func)
         | LApply (func, _) ->
             match func.Type with
+            | Type.Specific (Value.Func func) -> func.RetType
             | Type.Func (_, retType) -> retType
             | _ -> failwithf "%O is a malformed expression tree" expr
+        | Lambda ((_, varExpr), bodyExpr) -> failwithf "cannot take type of lambda yet" // Type.Func(varExpr, bodyExpr.Type)
         override t.ToString() =
             match t with
             | Literal (_, token) -> string token
@@ -89,3 +91,5 @@ and [<RequireQualifiedAccess>] Expr =
             | Let (token, expr, ret) -> sprintf "let %O: %O = %O in %O" token expr.Type expr ret
             | RApply (arg, func) -> sprintf "(%O) > (%O)" arg func
             | LApply (func, arg) -> sprintf "(%O) < (%O)" func arg
+            | Lambda ((varToken, varExpr), bodyExpr) -> sprintf "(%O: %O -> %O)" varToken varExpr bodyExpr
+
