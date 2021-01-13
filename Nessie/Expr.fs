@@ -1,9 +1,22 @@
 ﻿namespace Nessie
 
-[<Struct>]
+[<RequireQualifiedAccess; StructuralEquality; StructuralComparison>]
 type Function = 
-    { ArgType: Type; Body: Expr; Name: string option }
-    member t.RetType = t.Body.Type
+    | External of Type * Type * name: string
+    | Lambda of argType: Type * body: Expr * name: string option
+    member t.ArgType = 
+        match t with
+        | External (a, _, _) | Lambda (a, _, _) -> a
+    member t.RetType =
+        match t with
+        | External (_, a, _) -> a 
+        | Lambda (_, body, _) -> body.Type
+    member t.Name =
+        match t with
+        | External (_, _, name) -> Some name
+        | Lambda (_, _, name) -> name
+    //{ ArgType: Type; Body: Expr; Name: string option }
+    //member t.RetType = t.Body.Type
 
 and [<RequireQualifiedAccess>] Type =
     | Specific of Value
