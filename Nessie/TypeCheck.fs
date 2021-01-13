@@ -73,47 +73,47 @@ module private Helper =
 
 open Helper
 
-let rec private typeCheckAst (con: TypeContext): Ast -> Result<Expr, TypeError> =
+let rec private typeCheckCon (con: TypeContext): Ast -> Result<Expr, TypeError> =
     function
     | Ast.Literal token -> Ok (Expr.Literal (literal token, token))
     | Ast.Var token -> find token con
     | Ast.Let (varToken, varAst, ret) ->
         result {
             //  type check the first expression
-            let! varExpr = typeCheckAst con varAst
+            let! varExpr = typeCheckCon con varAst
             //  type check the body (make a variable)
             let vars' = TypeContext.push (identifier varToken) varExpr.Type con
-            let! retExpr = typeCheckAst vars' ret
+            let! retExpr = typeCheckCon vars' ret
 
             return Expr.Let(varToken, varExpr, retExpr)
         }
     | Ast.Lambda ((varToken, varAst), bodyAst) ->
         result {
-            let! varExpr = typeCheckAst con varAst
+            let! varExpr = typeCheckCon con varAst
             
             let con' = TypeContext.push (identifier varToken) varExpr.Type con
-            let! bodyExpr = typeCheckAst con' bodyAst
+            let! bodyExpr = typeCheckCon con' bodyAst
 
             return Expr.Lambda((varToken, varExpr), bodyExpr)
         }
     | Ast.LApply (funcAst, argAst) ->
         result {
-            let! funcExpr = typeCheckAst con funcAst
-            let! argExpr = typeCheckAst con argAst
+            let! funcExpr = typeCheckCon con funcAst
+            let! argExpr = typeCheckCon con argAst
             do! apply (funcExpr, argExpr) //   make sure you can apply
             return Expr.LApply(funcExpr, argExpr)
         }
     | Ast.RApply (argAst, funcAst) ->
         result {
-            let! argExpr = typeCheckAst con argAst
-            let! funcExpr = typeCheckAst con funcAst
+            let! argExpr = typeCheckCon con argAst
+            let! funcExpr = typeCheckCon con funcAst
             do! apply (funcExpr, argExpr) //   make sure you can apply
             return Expr.RApply(argExpr, funcExpr)
         }
     | Ast.Apply (a1, a2) ->
         result {
-            let! e1 = typeCheckAst con a1
-            let! e2 = typeCheckAst con a2
+            let! e1 = typeCheckCon con a1
+            let! e2 = typeCheckCon con a2
             match e1.Type, e2.Type with
             | Applicable _, Applicable _ -> return! Error (TypeError.AmbiguousApplication(e1, e2))
             | Applicable _, _ -> 
@@ -126,4 +126,4 @@ let rec private typeCheckAst (con: TypeContext): Ast -> Result<Expr, TypeError> 
         }
 
 let typeCheck (ast: Ast) =
-    typeCheckAst TypeContext.empty ast
+    typeCheckCon TypeContext.empty ast
