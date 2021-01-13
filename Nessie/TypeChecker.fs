@@ -65,7 +65,7 @@ let typeCheckAst (vars: Vars) (ast: Ast): Result<Expr, Error> =
 
             let vars' = Vars.push varName varType vars
             let! retExpr = typeCheckAst vars' ret
-            return Expr.Let(varExpr, retExpr)
+            return Expr.Let(varToken, varExpr, retExpr)
         }
     | Ast.LApply (funcAst, argAst)
     | Ast.RApply (argAst, funcAst) ->
