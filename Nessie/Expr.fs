@@ -67,6 +67,7 @@ and [<RequireQualifiedAccess>] Expr =
     | Var of int * Type * Token
     /// A let in expression
     | Let of Token * Expr * Expr
+    | Lambda of (Token * Expr) * Expr
     /// Apply arg to func (but from the right to left)
     | RApply of arg: Expr * func: Expr
     /// Apply arg to func (but from the left to right)

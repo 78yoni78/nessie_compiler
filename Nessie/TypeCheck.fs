@@ -87,6 +87,15 @@ let rec private typeCheckAst (con: TypeContext): Ast -> Result<Expr, TypeError> 
 
             return Expr.Let(varToken, varExpr, retExpr)
         }
+    | Ast.Lambda ((varToken, varAst), bodyAst) ->
+        result {
+            let! varExpr = typeCheckAst con varAst
+            
+            let con' = TypeContext.push (identifier varToken) varExpr.Type con
+            let! bodyExpr = typeCheckAst con' bodyAst
+
+            return Expr.Lambda((varToken, varExpr), bodyExpr)
+        }
     | Ast.LApply (funcAst, argAst) ->
         result {
             let! funcExpr = typeCheckAst con funcAst
