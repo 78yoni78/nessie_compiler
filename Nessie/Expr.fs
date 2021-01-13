@@ -1,17 +1,25 @@
 ﻿namespace Nessie
 
 [<Struct>]
-type Function = { ArgType: Type; Body: Expr; Name: string option }
+type Function = 
+    { ArgType: Type; Body: Expr; Name: string option }
+    member t.BodyType = t.Body.Type
 
 and [<RequireQualifiedAccess>] Type =
     | Specific of Value
+    | Type 
     | Int 
-    | Func of Type * Type
+    | Func of arg: Type * ret: Type
 
 and [<RequireQualifiedAccess>] Value =
     | Type of Type
     | Int of int
     | Func of Function
+    member t.OriginType = 
+        match t with
+        | Type _ -> Type.Type
+        | Int _ -> Type.Int
+        | Func func -> Type.Func (func.ArgType, func.BodyType)
 
 and [<RequireQualifiedAccess>] Expr =
     | Literal of Value * Token
@@ -22,3 +30,13 @@ and [<RequireQualifiedAccess>] Expr =
     | RApply of arg: Expr * func: Expr
     /// Apply arg to func (but from the left to right)
     | LApply of func: Expr * arg: Expr
+    member expr.Type = 
+        match expr with
+        | Literal (value, _) -> Type.Specific value
+        | Var (_, t, _) -> t
+        | Let (_, ret) -> ret.Type
+        | RApply (_, func)
+        | LApply (func, _) ->
+            match func.Type with
+            | Type.Func (_, retType) -> retType
+            | _ -> failwithf "%O is a malformed expression tree" expr
