@@ -15,6 +15,8 @@ and [<RequireQualifiedAccess>] Value =
     | Type of Type
     | Int of int
     | Func of Function
+    /// Get the supertype of a specifc type of this value
+    /// ie: an int will return Type.Int, a type will return Type.Type and so on
     member t.OriginType = 
         match t with
         | Type _ -> Type.Type
