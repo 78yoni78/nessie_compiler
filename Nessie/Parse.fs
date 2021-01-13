@@ -79,6 +79,14 @@ module private Helper =
                 return Some (x1, xs)
         }
 
+    let tryParse parser = 
+        ParseAction (fun con -> 
+            match parseWith parser con with
+            | Ok (a, con') ->
+                Ok (Ok a, con')
+            | Error e -> 
+                Ok (Error e, con))
+
 open Helper
 
 let rec private ``let declaration`` =
@@ -131,17 +139,38 @@ and private ``application expression`` =
             return List.fold (fun x (sep, y) -> sep (x, y)) x1 xn |> Some
     }
 
+and private ``lambda expression start`` = 
+    parse {
+        let! varToken = expectIdentifier
+        let! _ = expectEq TokenKind.Colon
+        let! varType = expr
+        let! _ = expectEq TokenKind.LongArrow
+        return varToken, varType
+    }
+
+and private ``lambda expression end`` var  = 
+    parse {
+        let! body = expr
+        return Ast.Lambda(var, body)
+    }
+
 and private expr =
     parse {
-        let! current = peek
-        match Token.kind current with
-        | TokenKind.Let -> 
-            return! ``let declaration`` 
-        | _ -> 
-            let! e1 = ``application expression``
-            match e1 with
-            | None -> return! error (ParseError.Unexpected("expression", current))
-            | Some e1 -> return e1
+        let! lambdaStart = tryParse ``lambda expression start``
+        match lambdaStart with 
+        | Ok var -> 
+            return! ``lambda expression end`` var
+        | Error e -> 
+            let! current = peek
+            match Token.kind current with
+            | TokenKind.Let -> 
+                return! ``let declaration`` 
+            | TokenKind.Identifier _ 
+            | _ -> 
+                let! e1 = ``application expression``
+                match e1 with
+                | None -> return! error (ParseError.Unexpected("expression", current))
+                | Some e1 -> return e1
     }
 
 let parse (tokens: Tokens) =
