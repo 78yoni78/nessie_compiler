@@ -1,98 +1,120 @@
-﻿module rec Nessie.TypeCheck
+﻿module Nessie.TypeCheck
 
 open Result
 
 [<RequireQualifiedAccess>]
-type Error = 
+type TypeError = 
     | UndefinedIdentifier of Token
     | NotAFunction of func: Expr
     | NoFunctions of func1: Expr * func2: Expr
     | ArgumentDoesntMatch of func: Expr * arg: Expr
     | AmbiguousApplication of Expr * Expr
 
-[<Struct>]
-type Vars = { Map: Map<string, list<int * Type>>; Count: int }
+module private Helper =
+    [<Struct>]
+    type TypeContext = { Map: Map<string, list<int * Type>>; Count: int }
 
-module Vars =
-    let count {Count=count} = count
-
-    let tryFind name {Map=map} = map.TryFind name |> Option.bind List.tryHead
-    
-    let push name varType {Map=map; Count=count} =
-        let var = (count, varType)
-
-        let map' = 
-            match map.TryFind name with
-            | None -> 
-                Map.add name [ var ] map
-            | Some lst -> 
-                Map.add name (var :: lst) map
+    module TypeContext =
+        let count {Count=count} = count
         
-        { Map = map'; Count = count + 1 }
+        let empty = { Map=Map.empty; Count=0 }
 
-    let empty = { Map=Map.empty; Count=0 }
+        let tryFind name { Map=map } = map.TryFind name |> Option.bind List.tryHead
+    
+        let push name varType { Map=map; Count=count } =
+            let var = (count, varType)
 
-/// Return the argument and return of a function type. If not a function type, none.
-let private (|Applicable|_|) = function
-    | Type.Specific (Value.Func _ as func) -> 
-        match func.OriginType with
-        | Type.Func (arg, ret) -> Some (arg, ret)
+            let map' = 
+                match map.TryFind name with
+                | None -> 
+                    Map.add name [ var ] map
+                | Some lst -> 
+                    Map.add name (var :: lst) map
+        
+            { Map = map'; Count = count + 1 }
+
+    /// Return the argument and return of a function type. If not a function type, none.
+    let (|Applicable|_|) = function
+        | Type.Specific (Value.Func _ as func) -> 
+            match func.OriginType with
+            | Type.Func (arg, ret) -> Some (arg, ret)
+            | _ -> None
+        | Type.Func (arg, ret) ->
+            Some (arg, ret)
         | _ -> None
-    | Type.Func (arg, ret) ->
-        Some (arg, ret)
-    | _ -> None
+    
+    /// get the value of a literal token (or throw)
+    let literal token = 
+        match Token.kind token with
+        | TokenKind.Int i -> Value.Int i
+        | _ -> invalidArg (nameof token) "Token was not a literal"
 
-let private valueOfToken token = 
-    match Token.kind token with
-    | TokenKind.Int i -> Value.Int i
-    | _ -> invalidArg (nameof token) "Token was not a literal"
+    /// get the name of an identifier token (or throw)
+    let identifier token =
+        match Token.kind token with
+        | TokenKind.Identifier name -> name
+        | _ -> invalidArg (nameof token) "Token was not an identifier"
 
-let typeCheckAst (vars: Vars) (ast: Ast): Result<Expr, Error> =
-    match ast with
-    | Ast.Literal token ->
-        let value = valueOfToken token
-        Ok (Expr.Literal (value, token))
-    | Ast.Var token ->
-        let (TokenKind.Identifier name) = token.Kind
-        match Vars.tryFind name vars with
-        | None -> Error(Error.UndefinedIdentifier token)
+    let find token context = 
+        match TypeContext.tryFind (identifier token) context with
+        | None -> Error(TypeError.UndefinedIdentifier token)
         | Some (varID, varType) -> Ok (Expr.Var(varID, varType, token))
+
+    let apply (func: Expr, arg: Expr) = 
+        let argType, funcType = arg.Type, func.Type
+        match funcType with 
+        | Applicable (expectedArgType, _) ->
+            if not (expectedArgType.SuperSet argType) then
+                Error (TypeError.ArgumentDoesntMatch(func, arg))
+            else
+                Ok ()
+        | _ -> 
+            Error (TypeError.NotAFunction func)
+
+open Helper
+
+let rec private typeCheckAst (con: TypeContext): Ast -> Result<Expr, TypeError> =
+    function
+    | Ast.Literal token -> Ok (Expr.Literal (literal token, token))
+    | Ast.Var token -> find token con
     | Ast.Let (varToken, varAst, ret) ->
         result {
-            let! varExpr = typeCheckAst vars varAst
-            let varType = varExpr.Type
-            let (TokenKind.Identifier varName) = varToken.Kind
-
-            let vars' = Vars.push varName varType vars
+            //  type check the first expression
+            let! varExpr = typeCheckAst con varAst
+            //  type check the body (make a variable)
+            let vars' = TypeContext.push (identifier varToken) varExpr.Type con
             let! retExpr = typeCheckAst vars' ret
+
             return Expr.Let(varToken, varExpr, retExpr)
         }
-    | Ast.LApply (funcAst, argAst)
+    | Ast.LApply (funcAst, argAst) ->
+        result {
+            let! funcExpr = typeCheckAst con funcAst
+            let! argExpr = typeCheckAst con argAst
+            do! apply (funcExpr, argExpr) //   make sure you can apply
+            return Expr.LApply(funcExpr, argExpr)
+        }
     | Ast.RApply (argAst, funcAst) ->
         result {
-            let! argExpr = typeCheckAst vars argAst
-            let! funcExpr = typeCheckAst vars funcAst
-            let argType, funcType = argExpr.Type, funcExpr.Type
-            match funcType with 
-            | Applicable (expectedArgType, _) ->
-                if not (expectedArgType.SuperSet argType) then
-                    return! Error (Error.ArgumentDoesntMatch(funcExpr, argExpr))
-                else
-                    match ast with
-                    | Ast.LApply _ -> 
-                        return Expr.LApply (funcExpr, argExpr)
-                    | Ast.RApply _ -> 
-                        return Expr.RApply (argExpr, funcExpr)
-            | _ -> 
-                return! Error (Error.NotAFunction funcExpr)
+            let! argExpr = typeCheckAst con argAst
+            let! funcExpr = typeCheckAst con funcAst
+            do! apply (funcExpr, argExpr) //   make sure you can apply
+            return Expr.RApply(argExpr, funcExpr)
         }
     | Ast.Apply (a1, a2) ->
         result {
-            let! e1 = typeCheckAst vars a1
-            let! e2 = typeCheckAst vars a2
+            let! e1 = typeCheckAst con a1
+            let! e2 = typeCheckAst con a2
             match e1.Type, e2.Type with
-            | Applicable _, Applicable _ -> return! Error (Error.AmbiguousApplication(e1, e2))
-            | Applicable _, _ -> return! typeCheckAst vars (Ast.LApply(a1, a2))
-            | _, Applicable _ -> return! typeCheckAst vars (Ast.RApply(a1, a2))
-            | _ -> return! Error (Error.NoFunctions(e1, e2))
+            | Applicable _, Applicable _ -> return! Error (TypeError.AmbiguousApplication(e1, e2))
+            | Applicable _, _ -> 
+                do! apply (e1, e2)
+                return Expr.LApply(e1, e2)
+            | _, Applicable _ ->                 
+                do! apply (e2, e1)
+                return Expr.RApply(e1, e2)
+            | _ -> return! Error (TypeError.NoFunctions(e1, e2))
         }
+
+let typeCheck (ast: Ast) =
+    typeCheckAst TypeContext.empty ast
