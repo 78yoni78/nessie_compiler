@@ -3,7 +3,7 @@
 open System
 
 open Nessie
-open Nessie.TypeChecker
+open Nessie.TypeCheck
 
 [<EntryPoint>]
 let main argv =
@@ -18,7 +18,7 @@ let y = x + 3 in
     let ast = Parse.parse tokens
 
     let vars = Vars.empty |> Vars.push "+" (Type.Func (Type.Int, Type.Func(Type.Int, Type.Int)))
-    let expr = Result.bind (TypeChecker.typeCheckAst vars) (ast |> Result.mapError (fun _ -> Unchecked.defaultof<TypeChecker.Error>))
+    let expr = Result.bind (TypeCheck.typeCheckAst vars) (ast |> Result.mapError (fun _ -> Unchecked.defaultof<TypeCheck.Error>))
 
     printfn "Tokens: %s" (tokens |> Seq.map string |> String.concat " ")
     printfn "Errors: %A" errors

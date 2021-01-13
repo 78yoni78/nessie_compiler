@@ -1,4 +1,4 @@
-﻿module rec Nessie.TypeChecker
+﻿module rec Nessie.TypeCheck
 
 open Result
 
