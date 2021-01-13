@@ -30,6 +30,8 @@ module Vars =
         
         { Map = map'; Count = count + 1 }
 
+    let empty = { Map=Map.empty; Count=0 }
+
 /// Return the argument and return of a function type. If not a function type, none.
 let private (|Applicable|_|) = function
     | Type.Specific (Value.Func _ as func) -> 
