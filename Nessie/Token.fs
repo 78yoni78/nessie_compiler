@@ -13,6 +13,7 @@ type TokenKind =
     | Colon
     | LArrow
     | RArrow
+    | LongArrow
     | Let 
     | In
     | EOF
@@ -29,6 +30,7 @@ type TokenKind =
         | LArrow -> "<"
         | RArrow -> ">"
         | Colon -> ":"
+        | LongArrow -> "->"
         | Let -> "let"
         | In -> "in"
         | EOF -> "EOF"

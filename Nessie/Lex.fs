@@ -60,6 +60,17 @@ module private Helper =
         | Some x -> incr i; Some x
         | None -> None 
 
+    let (|LongSymbol|_|) { LexContext.Str=str; Index=i } =
+        if not (!i + 1 < str.Length) then
+            None
+        else 
+            match str.[!i], str.[!i + 1] with
+            | '-', '>' -> Some TokenKind.LongArrow
+            | _ -> None
+        |> function
+        | Some x -> incr i; incr i; Some x
+        | None -> None 
+
 open Helper
     
 let lex (str: string): Token ResizeArray * LexError ResizeArray =
@@ -76,6 +87,7 @@ let lex (str: string): Token ResizeArray * LexError ResizeArray =
         //  get the length and type of the current token (or None for failure)
         let maybeKind = 
             match context with
+            | LongSymbol kind 
             | SimpleToken kind -> Some kind
             | Int num -> Some(TokenKind.Int num)
             | IdentifierOrKeyword kind -> Some kind
