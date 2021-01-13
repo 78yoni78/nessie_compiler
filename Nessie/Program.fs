@@ -17,8 +17,7 @@ let y = x + 3 in
 
     let ast = Parse.parse tokens
 
-    let vars = Vars.empty |> Vars.push "+" (Type.Func (Type.Int, Type.Func(Type.Int, Type.Int)))
-    let expr = Result.bind (TypeCheck.typeCheckAst vars) (ast |> Result.mapError (fun _ -> Unchecked.defaultof<TypeCheck.TypeError>))
+    let expr = Result.bind TypeCheck.typeCheck (ast |> Result.mapError (fun _ -> Unchecked.defaultof<TypeCheck.TypeError>))
 
     printfn "Tokens: %s" (tokens |> Seq.map string |> String.concat " ")
     printfn "Errors: %A" errors
