@@ -32,6 +32,12 @@ module private Helper =
                     Map.add name (var :: lst) map
         
             { Map = map'; Count = count + 1 }
+            
+        let ofMap lst = 
+            let mutable ret = empty
+            for (name, value) in lst do
+                ret <- push name (Type.Specific value) ret
+            ret
 
     /// Return the argument and return of a function type. If not a function type, none.
     let (|Applicable|_|) = function
@@ -125,5 +131,5 @@ let rec private typeCheckCon (con: TypeContext): Ast -> Result<Expr, TypeError> 
             | _ -> return! Error (TypeError.NoFunctions(e1, e2))
         }
 
-let typeCheck (ast: Ast) =
-    typeCheckCon TypeContext.empty ast
+let typeCheck (variables: list<string * Value>) (ast: Ast) =
+    typeCheckCon (TypeContext.ofMap variables) ast
