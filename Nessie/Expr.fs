@@ -25,6 +25,12 @@ and [<RequireQualifiedAccess>] Type =
         | Func(arg1, ret1), Func(arg2, ret2) -> 
             ret1.SuperSet ret2 && arg2.SuperSet arg1
         | _ -> false
+    override t.ToString() =
+        match t with
+        | Specific value -> sprintf "specific %O" value
+        | Type -> "type"
+        | Int -> "int"
+        | Func (arg, ret) -> sprintf "(%O -> %O)" ret arg
 
 and [<RequireQualifiedAccess>] Value =
     | Type of Type
@@ -37,6 +43,11 @@ and [<RequireQualifiedAccess>] Value =
         | Type _ -> Type.Type
         | Int _ -> Type.Int
         | Func func -> Type.Func (func.ArgType, func.RetType)
+    override t.ToString () =
+        match t with
+        | Type t -> sprintf "%O" t
+        | Int i -> string i
+        | Func func -> string func
 
 and [<RequireQualifiedAccess>] Expr =
     | Literal of Value * Token
@@ -57,3 +68,10 @@ and [<RequireQualifiedAccess>] Expr =
             match func.Type with
             | Type.Func (_, retType) -> retType
             | _ -> failwithf "%O is a malformed expression tree" expr
+        override t.ToString() =
+            match t with
+            | Literal (_, token) -> string token
+            | Var (_, typ, token) -> string token 
+            | Let (token, expr, ret) -> sprintf "let %O: %O = %O in %O" token expr.Type expr ret
+            | RApply (arg, func) -> sprintf "(%O) > (%O)" arg func
+            | LApply (func, arg) -> sprintf "(%O) < (%O)" func arg
