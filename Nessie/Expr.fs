@@ -67,7 +67,7 @@ and [<RequireQualifiedAccess>] Expr =
     | Var of int * Type * Token
     /// A let in expression
     | Let of Token * Expr * Expr
-    | Lambda of (Token * Expr) * Expr
+    | Lambda of (Token * Type) * Expr
     /// Apply arg to func (but from the right to left)
     | RApply of arg: Expr * func: Expr
     /// Apply arg to func (but from the left to right)
@@ -83,13 +83,13 @@ and [<RequireQualifiedAccess>] Expr =
             | Type.Specific (Value.Func func) -> func.RetType
             | Type.Func (_, retType) -> retType
             | _ -> failwithf "%O is a malformed expression tree" expr
-        | Lambda ((_, varExpr), bodyExpr) -> failwithf "cannot take type of lambda yet" // Type.Func(varExpr, bodyExpr.Type)
-        override t.ToString() =
-            match t with
-            | Literal (_, token) -> string token
-            | Var (_, typ, token) -> string token 
-            | Let (token, expr, ret) -> sprintf "let %O: %O = %O in %O" token expr.Type expr ret
-            | RApply (arg, func) -> sprintf "(%O) > (%O)" arg func
-            | LApply (func, arg) -> sprintf "(%O) < (%O)" func arg
-            | Lambda ((varToken, varExpr), bodyExpr) -> sprintf "(%O: %O -> %O)" varToken varExpr bodyExpr
+        | Lambda ((_, argType), bodyExpr) -> Type.Func(argType, bodyExpr.Type)
+    override t.ToString() =
+        match t with
+        | Literal (_, token) -> string token
+        | Var (_, typ, token) -> string token 
+        | Let (token, expr, ret) -> sprintf "let %O: %O = %O in %O" token expr.Type expr ret
+        | RApply (arg, func) -> sprintf "(%O) > (%O)" arg func
+        | LApply (func, arg) -> sprintf "(%O) < (%O)" func arg
+        | Lambda ((varToken, varExpr), bodyExpr) -> sprintf "(%O: %O -> %O)" varToken varExpr bodyExpr
 

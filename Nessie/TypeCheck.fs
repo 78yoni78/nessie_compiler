@@ -100,7 +100,8 @@ let rec private typeCheckCon (con: TypeContext): Ast -> Result<Expr, TypeError> 
             let con' = TypeContext.push (identifier varToken) varExpr.Type con
             let! bodyExpr = typeCheckCon con' bodyAst
 
-            return Expr.Lambda((varToken, varExpr), bodyExpr)
+            let getType (Ok (Value.Type x)) = x
+            return Expr.Lambda((varToken, Evaluate.evaluate Map.empty varExpr |> getType), bodyExpr)
         }
     | Ast.LApply (funcAst, argAst) ->
         result {
