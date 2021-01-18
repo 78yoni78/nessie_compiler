@@ -13,6 +13,7 @@
     <Compile Include="Ast.fs" />
     <Compile Include="Parse.fs" />
     <Compile Include="Expr.fs" />
+    <Compile Include="Evaluate.fs" />
     <Compile Include="TypeCheck.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
